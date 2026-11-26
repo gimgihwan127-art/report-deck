@@ -24,7 +24,11 @@ button{cursor:pointer}
 /* ───── 앱 화면 ───── */
 #app{height:100%;display:grid;grid-template:56px 1fr / minmax(320px,400px) 1fr}
 .top{grid-column:1/-1;background:var(--brand);color:#fff;display:flex;align-items:center;gap:6px;padding:0 20px}
-.top h1{font-size:19px;font-weight:400;letter-spacing:-.02em;margin:0 auto 0 0;white-space:nowrap}
+.thm{display:flex;align-items:center;margin-right:auto;border:1px solid #ffffff70}
+.thm button{padding:6px 14px!important;display:flex;align-items:center;gap:8px}
+.thm button i{width:22px;height:14px;display:block;flex:none;border:1px solid #ffffff60}
+.thm button[aria-pressed=true]{background:#fff!important;color:#111}
+.top h1{font-size:19px;font-weight:400;letter-spacing:-.02em;margin:0 14px 0 0;white-space:nowrap}
 .top button{background:none;border:0;color:#fff;padding:8px 12px;white-space:nowrap}
 .top button:hover{background:rgba(255,255,255,.16)}
 .top button:disabled{opacity:.4;cursor:default;background:none}
@@ -221,6 +225,67 @@ table.t .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap
 .logo{display:flex;align-items:center;gap:18px;font-size:26px;line-height:1.2}
 .logo img{height:52px;max-width:220px;object-fit:contain}
 
+/* ───── 테마: 스테이지 (검정·남색·빨강 바탕, 코랄·골드 포인트, 굵은 제목과 둥근 카드) ───── */
+.slide.th-stage{font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif;letter-spacing:-.02em;--muted:color-mix(in srgb,var(--ink) 72%,transparent)}
+.th-stage.light{--bg:#1F3A8A;--ink:#F7F3EC;--card:#FAF7F2;--cardi:#10204F;--tag:#1F3A8A;--acc:#D9B872;--acc2:#D9B872;--rule:#ffffff40;--soft:#ffffff42;--hl:#D9B872;--hi:#10204F;--pan:#FAF7F2;--pani:#10204F;--c1:#D9B872;--c2:#FAF7F2;--c3:#7EA2F5;--c4:#E8545C;--c5:#10204F;--c6:#5C74B8}
+.th-stage.blue,.th-stage.photo{--bg:#141112;--ink:#F4EFE8;--card:#221C1E;--cardi:#F4EFE8;--tag:#E8545C;--acc:#D9B872;--acc2:#E8545C;--rule:#ffffff30;--soft:#5C5052;--hl:#E8545C;--hi:#fff;--pan:#FAF7F2;--pani:#10204F;--c1:#E8545C;--c2:#5B8DEF;--c3:#D9B872;--c4:#F4EFE8;--c5:#6B5F62;--c6:#3A3133}
+.th-stage.grey{--bg:#9A1B22;--ink:#FBF3EE;--card:#141112;--cardi:#FBF3EE;--tag:#E9C987;--acc:#E9C987;--acc2:#E9C987;--rule:#ffffff45;--soft:#ffffff40;--hl:#E9C987;--hi:#3A0D10;--pan:#141112;--pani:#FBF3EE;--c1:#E9C987;--c2:#141112;--c3:#FBF3EE;--c4:#1F3A8A;--c5:#5E1015;--c6:#D97A7F}
+.th-stage .ttl{font-weight:800;letter-spacing:-.035em;line-height:1.2}
+.th-stage .hl{background:none!important;color:inherit;padding:0}
+.th-stage .lead{font-weight:500;color:var(--muted)}
+.th-stage .vr,.th-stage .arr,.th-stage .band{display:none}
+.th-stage .hd{color:var(--acc2);font-weight:700;letter-spacing:.08em;font-size:15px}
+.th-stage .hr{height:5px;width:110px;background:var(--acc);border-radius:3px}
+.th-stage .tag .hl{color:var(--tag);font-weight:700}
+.th-stage .pill{border:0;background:var(--acc);color:#2B2208;font-weight:700;border-radius:8px}.th-stage .pill svg{display:none}
+.th-stage b.k{color:var(--tag);font-weight:700}
+.th-stage .p{font-weight:500}
+.th-stage .ruled>li,.th-stage .nums>li{border:0;background:var(--card);color:var(--cardi);border-radius:12px;padding:.62em .95em;margin-bottom:.45em;font-weight:500}
+.th-stage .ruled>li:first-child{padding-top:.62em}.th-stage .nums>li:last-child{border:0}
+.th-stage .nums .n{font-weight:800;color:var(--tag);font-size:1.3em}
+.th-stage .l2{column-gap:.8em}
+.th-stage .chev>li{grid-template-columns:1em 1fr;font-weight:500}
+.th-stage .chev>li::before{content:"";width:.4em;height:.4em;background:var(--acc2);margin-top:.56em;border-radius:2px}
+.th-stage .cols{gap:.9em}
+.th-stage .cols .col,.th-stage .defs>div{background:var(--card);color:var(--cardi);border-radius:14px;padding:1.05em 1.2em}
+.th-stage .col .ruled>li,.th-stage .col .nums>li{background:none;padding:.3em 0;margin:0;border-radius:0;border-bottom:1px solid color-mix(in srgb,var(--cardi) 18%,transparent)}
+.th-stage .cmp{border:0}.th-stage .cmp .col:first-child{padding-left:1.4em}
+.th-stage .cmp .col:last-child{background:var(--acc);color:#2B2208;--tag:#5A3E05;--acc2:#2B2208}
+.th-stage .stats{grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:.8em}
+.th-stage .st{display:flex;flex-direction:column;background:var(--card);color:var(--cardi);border-radius:14px;padding:.8em 1.1em .9em;border-left:.3em solid var(--acc)}
+.th-stage .st .kx{order:-1;color:var(--tag);font-weight:700;font-size:.9em}
+.th-stage .st .v{font-weight:800;letter-spacing:-.03em}
+.th-stage .st .nt{opacity:.85}
+.th-stage .stack{grid-template-columns:1fr}.th-stage .stack .st .v{font-size:3.2em}
+.th-stage .tl{padding-top:0;gap:.6em}.th-stage .tl::before,.th-stage .tl>div::before{display:none}
+.th-stage .tl>div{background:var(--card);color:var(--cardi);border-radius:12px;padding:.95em 1em;font-weight:500}
+.th-stage .tl>div:first-child{background:var(--acc);color:#2B2208}
+.th-stage .tl .d{font-weight:800;color:var(--tag)}.th-stage .tl>div:first-child .d{color:#2B2208}
+.th-stage .tv>div{font-weight:500}.th-stage .tv>.d{font-weight:800;color:var(--acc)}
+.th-stage table.t{border-collapse:separate;border-spacing:0}
+.th-stage table.t th{background:var(--card);color:var(--tag);font-weight:700}
+.th-stage table.t th:first-child{border-radius:10px 0 0 10px}.th-stage table.t th:last-child{border-radius:0 10px 10px 0}
+.th-stage table.t td{font-weight:500}
+.th-stage .bars{border-bottom-color:var(--rule)}.th-stage .bars i,.th-stage .hb .b i{background:var(--soft);border-radius:6px 6px 0 0}
+.th-stage .hb .b i{border-radius:0 6px 6px 0}
+.th-stage .bars .hot i,.th-stage .hb .hot i{background:var(--acc2)}
+.th-stage .bars .v,.th-stage .hb span{font-weight:700}
+.th-stage .donut .lg i{border:0;border-radius:3px}.th-stage .donut .lg .v{font-weight:800}
+.th-stage .q{font-weight:700}.th-stage .q .hl{color:var(--acc)}
+.th-stage .note{color:var(--acc);opacity:1}
+.th-stage .m{border-radius:14px}.th-stage.f-D .m,.th-stage.f-F .m{border-radius:0}
+.th-stage .circ{background:var(--card);color:var(--cardi);border:0}.th-stage .circ.first{background:var(--acc2);color:#fff}
+.th-stage.light .circ{color:var(--cardi)}.th-stage .circ .v{font-weight:800}
+.th-stage .scr{background:linear-gradient(180deg,#000b 0,#0005 40%,#0003 60%,#000c 100%)}
+.stg-eye{font-size:26px;font-weight:700;letter-spacing:.14em;color:var(--acc2);text-transform:uppercase}
+.stg-meta{display:flex;flex-wrap:wrap;gap:6px 0;font-size:24px;line-height:1.4;color:var(--muted)}
+.stg-meta>div+div::before{content:"·";margin:0 .55em}.stg-meta b{font-weight:500;margin-right:.35em}
+.stg-sub{font-size:64px;font-weight:800;letter-spacing:-.03em;line-height:1.2;margin:0;color:var(--ink)}
+.stg-dd{font-size:150px;font-weight:800;line-height:1;color:var(--acc);letter-spacing:-.03em;text-align:right}
+.stg-ag{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:.7em}
+.stg-ag>div{background:var(--card);border-radius:14px;padding:.85em 1em;color:var(--cardi);font-weight:700;line-height:1.35}
+.stg-ag b{display:block;color:var(--acc2);font-weight:800;font-size:.8em;margin-bottom:.25em}
+
 /* ───── 발표 모드 ───── */
 #show{position:fixed;inset:0;background:#000;z-index:50;overflow:hidden;user-select:none}
 #show .slide{position:absolute;left:50%;top:50%;transform-origin:0 0}
@@ -268,6 +333,7 @@ table.t .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap
 <div id="app">
   <header class="top">
     <h1>리포트덱</h1>
+    <div class="thm" role="group" aria-label="디자인 테마" id="thm"></div>
     <button id="bUndo" disabled title="Ctrl+Z">되돌리기</button>
     <button id="bNew">새 보고서</button>
     <button id="bOpen">불러오기</button>
@@ -304,7 +370,7 @@ table.t .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap
     <details class="set"><summary>양식 설정</summary>
       <div class="form">
         <span>로고</span><div><button class="lnk" id="bLogo">로고 넣기</button></div>
-        <span>대표 색</span><div class="sw" id="sw"></div>
+        <span id="swL">대표 색</span><div class="sw" id="sw"></div>
         <label for="sAg">목차</label><label><input type="checkbox" id="sAg"> 표지 다음에 자동으로 넣기</label>
       </div>
     </details>
@@ -361,11 +427,18 @@ const uid=()=>Math.random().toString(36).slice(2,10);
 const COLORS=['#2522CB','#17181C','#0B5A43','#8A1538','#B4380F','#0B4F8A'];
 const FRAME={cover:'표지',agenda:'목차',section:'구분 페이지',end:'마침',A:'제목 왼쪽',B:'제목 위',C:'사진 왼쪽',D:'사진 절반',E:'사진 겹침',F:'사진 전면',G:'제목 왼쪽 + 사진',H:'숫자 강조',I:'사진 모음',J:'크게 보기',K:'원형 비교',L:'한 문장',M:'자료 오른쪽'};
 const FTHEME={A:['light','blue'],B:['light','grey'],C:['blue','light'],D:['grey','blue'],E:['light','grey'],F:['photo'],G:['blue','light'],H:['grey','light','blue'],I:['light','blue'],J:['blue','light'],K:['light','grey'],L:['blue','light'],M:['light','blue']};
-const THEME={light:'밝은 배경',blue:'대표 색 배경',grey:'회색 배경'};
+/* 디자인 테마. 새 테마는 여기에 하나 더 등록하고 .th-<id> 스타일을 쓰면 된다 */
+const THEMES={
+  cobalt:{name:'코발트',sw:['#2522CB','#E8E7E2'],skip:[],bg:{light:'밝은 배경',blue:'대표 색 배경',grey:'회색 배경'},fixed:{cover:'blue',section:'blue',end:'blue',agenda:'light'},ft:{},lay:{}},
+  stage:{name:'스테이지',sw:['#141112','#E8545C'],skip:['A','E','G'],bg:{light:'남색 배경',blue:'검정 배경',grey:'빨강 배경'},fixed:{cover:'blue',section:'grey',end:'blue',agenda:'blue'},
+    ft:{B:['light','blue'],C:['light','blue'],D:['blue','light'],H:['blue','light'],I:['blue','light'],J:['blue','light'],K:['blue','light'],L:['grey','blue'],M:['light','blue']},lay:{}}
+};
+const TH=()=>THEMES[S.set.theme]||THEMES.cobalt;
+const THEME=new Proxy({},{get:(_,k)=>TH().bg[k],ownKeys:()=>Object.keys(TH().bg),getOwnPropertyDescriptor:()=>({enumerable:true,configurable:true})});
 const VIZ={stat:'큰 숫자',bars:'막대',donut:'도넛',circ:'원형'};
 
 const today=()=>{const d=new Date();return`${d.getFullYear()}. ${d.getMonth()+1}. ${d.getDate()}`};
-const S={id:uid(),text:'',ov:[],set:{co:'콘텐츠팀',rep:'김기환',date:'',color:COLORS[0],agenda:true,logo:null},media:[],sample:false};
+const S={id:uid(),text:'',ov:[],set:{co:'콘텐츠팀',rep:'김기환',date:'',color:COLORS[0],agenda:true,logo:null,theme:'cobalt'},media:[],sample:false};
 let deck=null, flat=[], cache=new Map(), undoS=[];
 
 /* ═════════ 1. 원고 읽기 ═════════ */
@@ -617,12 +690,13 @@ function candidates(s,F,ctx){
     if(n>3){c.E-=20;c.G-=14;c.C-=10}
   }
   for(const k in c){if(k===ctx.p1)c[k]-=15;else if(k===ctx.p2)c[k]-=5}
+  TH().skip.forEach(k=>delete c[k]);
   return Object.keys(c).sort((a,b)=>c[b]-c[a]);
 }
 function pickTheme(fr,ov,ctx){
   if(fr==='F')return'photo';
   if(ov?.theme)return ov.theme;
-  const o=FTHEME[fr]||['blue'];
+  const o=TH().ft[fr]||FTHEME[fr]||['blue'];
   if(o[0]!==ctx.t1)return o[0];
   if(o[0]==='light'&&ctx.t2!=='light')return'light';
   return o[1]||o[0];
@@ -730,7 +804,7 @@ const LAY={
     +`<div class="abs" style="left:56px;top:196px;width:860px;z-index:2">${titleHTML(s,{hl:1,max:92})}</div>`
     +`<div class="abs soft tf start" data-fit="1" style="left:56px;top:${196+(wlen(s.title?.text||'')>10?250:140)}px;width:450px;height:300px"><div class="in">${lead(s)}</div></div><div class="abs" style="left:56px;top:800px">${ARR}</div>`
     +fitBox(bodyHTML(s.groups,{...o,narrow:1}),{x:1112,y:110,w:432,h:734,max:1.15})},
-  F(s,F,o){return mediaHTML(F.media,1600,900,{gap:0})+`<div class="scr"></div><div class="abs" style="left:0;top:0;right:0;height:92px;background:var(--brand)"></div>`
+  F(s,F,o){return mediaHTML(F.media,1600,900,{gap:0})+`<div class="scr"></div><div class="abs band" style="left:0;top:0;right:0;height:92px;background:var(--brand)"></div>`
     +`<div class="abs" style="left:56px;top:134px;width:900px">${titleHTML(s,{hl:1})}</div><div class="abs" style="left:1010px;top:152px">${ARR}</div>`
     +`<div class="abs" style="left:1010px;top:220px;width:534px">${lead(s)}</div>`+fitBox(bodyHTML(s.groups,{...o,narrow:1}),{x:1010,y:s.lead?400:230,w:534,h:s.lead?444:500,pos:'start',max:1.2})},
   G(s,F,o){const land=mosaic(F.media,684,340).d<=mosaic(F.media,300,734).d;
@@ -788,6 +862,32 @@ const LAY={
     return fitBox(`<h2 class="ttl" style="--ts:104px"><span class="hl ttlh">목차</span></h2>`,{x:56,y:110,w:480,h:734,pos:'end',max:1,cls:'tf soft'})+`<i class="vr" style="left:560px;top:130px;height:690px"></i>`
     +fitBox(`<ul class="l nums ${t.length>7?'l2':''}">${t.map((x,i)=>`<li><span class="n">${String(i+1).padStart(2,'0')}</span><div>${esc(x)}</div></li>`).join('')}</ul>`,{x:620,y:110,w:924,h:734,max:1.25})}
 };
+const STG=THEMES.stage.lay;
+STG.cover=(s,F)=>{const m=F.media,dd=s.meta.find(k=>/^D\s?[-−+]\s?\d+$/i.test(k.val.text.trim())),rest={...s,meta:s.meta.filter(k=>k!==dd)};
+  const n=wlen(s.title.text),z=n<=5?230:n<=10?150:n<=18?118:n<=28?96:80,w=m.length?860:1300;
+  return`<i class="abs" style="left:0;top:0;bottom:0;width:22px;background:var(--acc2)"></i>`
+  +(m.length?mediaHTML(m,560,640,{x:984,y:130}):'')
+  +(dd?`<div class="abs" style="right:96px;top:150px"><div class="stg-dd">${T(dd.val)}</div><div style="text-align:right;font-size:30px;color:var(--muted);margin-top:10px">${T(dd.key)}</div></div>`:'')
+  +`<div class="abs stg-eye" style="left:106px;top:200px;width:${w}px">${S.set.co?SETT('co',S.set.co):''}</div>`
+  +fitBox(`<h1 class="ttl" style="--ts:${z}px;color:var(--acc2);line-height:1.08">${T(s.title)}</h1>${s.subs.length?`<p class="stg-sub">${s.subs.map(T).join('<br>')}</p>`:''}`,{x:106,y:250,w:dd?Math.min(w,980):w,h:400,pos:'end',max:1,cls:'tf soft'})
+  +`<i class="abs" style="left:106px;top:690px;width:150px;height:5px;background:var(--acc)"></i><div class="abs stg-meta" style="left:106px;top:730px;width:${w}px">${coverMeta(rest)}</div>`
+  +(S.set.logo?`<img class="abs" alt="" src="${S.set.logo}" style="right:96px;bottom:70px;height:56px;max-width:240px;object-fit:contain">`:'')};
+STG.section=(s,F,o,ctx)=>{const next=ctx.secTitles||[];
+  return`<div class="abs" style="left:106px;top:150px;font-size:180px;font-weight:800;line-height:1;color:var(--acc);letter-spacing:-.04em">${s.sec?String(s.sec.n).padStart(2,'0'):''}</div>`
+  +fitBox(titleHTML(s,{size:wlen(s.title.text)>12?104:132}),{x:106,y:360,w:1000,h:440,pos:'start',max:1,cls:'tf soft'})
+  +(next.length?fitBox(`<div class="stg-ag" style="--n:1">${next.map((x,i)=>`<div><b>${String(i+1).padStart(2,'0')}</b>${esc(x)}</div>`).join('')}</div>`,{x:1140,y:150,w:400,h:660,pos:'end',max:1.1}):'')};
+STG.end=(s,F)=>`<i class="abs" style="left:0;top:0;bottom:0;width:22px;background:var(--acc2)"></i>`
+  +fitBox(`<h2 class="ttl" style="--ts:170px;color:var(--acc2)">${T(s.title)}</h2>`+s.groups.flatMap(g=>g.blocks).map(b=>blockHTML(b,{})).join(''),{x:106,y:200,w:1300,h:500,pos:'mid',max:1,cls:'tf soft'})
+  +`<i class="abs" style="left:106px;top:730px;width:150px;height:5px;background:var(--acc)"></i><div class="abs stg-meta" style="left:106px;top:770px">${S.set.co?`<div>${SETT('co',S.set.co)}</div>`:''}${S.set.rep?`<div>${SETT('rep',S.set.rep)}</div>`:''}</div>`;
+STG.agenda=(s)=>{const t=s.list,n=t.length>12?4:t.length>6?3:2;
+  return`<div class="abs" style="left:96px;top:104px"><h2 class="ttl" style="--ts:84px">목차</h2></div>`
+  +fitBox(`<div class="stg-ag" style="--n:${n}">${t.map((x,i)=>`<div><b>${String(i+1).padStart(2,'0')}</b>${esc(x)}</div>`).join('')}</div>`,{x:96,y:250,w:1408,h:590,pos:'start',max:1.3})};
+STG.H=(s,F,o)=>{const b=F.kpi;if(!b)return LAY.B(s,F,o);
+  const gs=s.groups.map(g=>({...g,blocks:g.blocks.filter(x=>x!==b)})).filter(g=>g.blocks.length),bh=bodyHTML(gs,{...o,viz:null,ruled:1}),n=b.items.length;
+  const head=`<div class="abs" style="left:96px;top:104px;width:1408px;display:flex;flex-direction:column;gap:12px">${titleHTML(s,{max:84})}${lead(s)}</div>`,y=s.lead?300:250;
+  return head+(bh
+    ?fitBox(bh,{x:96,y,w:820,h:844-y,pos:'start',max:1.25})+fitBox(`<div class="stats stack">${b.items.map(statHTML).join('')}</div>`,{x:960,y,w:544,h:844-y,pos:'start',max:1.3})
+    :fitBox(`<div class="stats" style="--n:${n<=4?n:3}">${b.items.map(statHTML).join('')}</div>`,{x:96,y,w:1408,h:844-y,pos:'start',max:1.5}))};
 function makeNode(s,fr,theme,ov,ctx){
   BASE=s.start;
   const c={...s,groups:s.groups};
@@ -804,9 +904,9 @@ function makeNode(s,fr,theme,ov,ctx){
   }
   const F={...facts({...c,media:s.media},ov)};
   const el=document.createElement('div');
-  el.className=`slide ${theme} f-${fr}`;
+  el.className=`slide ${theme} f-${fr} th-${S.set.theme||'cobalt'}`;
   const head=s.kind==='cover'?'':`<div class="hd"><span>${esc(ctx.title)}</span><span>${s.sec?String(s.sec.n).padStart(2,'0')+' / '+esc(s.sec.title.text):''}</span><span class="pg"></span></div>`;
-  el.innerHTML=LAY[fr](c,F,{viz:F.viz},ctx)+(fr==='end'?'':head);
+  el.innerHTML=(TH().lay[fr]||LAY[fr])(c,F,{viz:F.viz},ctx)+(fr==='end'?'':head);
   return el;
 }
 function fit(el){
@@ -850,10 +950,10 @@ function splitInto(s,n){
     return{...s,groups,part:pi,parts:n,media:mper?s.media.slice(pi*mper,(pi+1)*mper):pi===0?s.media:[]};
   });
 }
-const FIXED={cover:'blue',section:'blue',end:'blue',agenda:'light'};
+const FIXED={cover:1,section:1,end:1,agenda:1};
 function layOne(s,ov,ctx){ // 한 조각의 최적 레이아웃을 실제로 재어보고 고른다
   const host=$('#measure');
-  if(FIXED[s.kind]){const th=ov?.theme||(s.kind==='agenda'&&ctx.t1==='light'?'light':FIXED[s.kind]);const n=makeNode(s,s.kind,th,ov,ctx);host.append(n);const k=fit(n);n.remove();return{frame:s.kind,theme:th,node:n,k:1,cands:[]}}
+  if(FIXED[s.kind]){const fx=TH().fixed,th=ov?.theme||(s.kind==='agenda'&&S.set.theme!=='stage'&&ctx.t1==='light'?'light':fx[s.kind]);const n=makeNode(s,s.kind,th,ov,ctx);host.append(n);const k=fit(n);n.remove();return{frame:s.kind,theme:th,node:n,k:1,cands:[]}}
   const F=facts(s,ov),all=candidates(s,F,ctx);
   const tryList=ov?.frame&&all.includes(ov.frame)?[ov.frame]:all.slice(0,4);
   let best=null;
@@ -901,7 +1001,7 @@ function render(){
   for(const{s,i}of list){
     if(s.kind==='section')ctx.secTitles=deck.slides.filter(x=>x.kind==='body'&&x.sec===s.sec&&s.sec&&x.title).map(x=>x.title.text);else ctx.secTitles=null;
     const ov=i>=0?S.ov[i]:null;
-    let sig=[relJSON(s),JSON.stringify(ov),ctx.title,ctx.p1,ctx.p2,ctx.t1,ctx.t2,ctx.secTitles,(S.set.logo||'').length,S.set.co,s.kind==='cover'?[S.set.rep,S.set.date||today()]:0,(s.media||[]).map(n=>{const m=M(n);return m?[m.id,m.fit,m.focus]:n}),cache.ver].map(x=>typeof x==='string'?x:JSON.stringify(x)).join('¦');
+    let sig=[relJSON(s),JSON.stringify(ov),ctx.title,ctx.p1,ctx.p2,ctx.t1,ctx.t2,ctx.secTitles,(S.set.logo||'').length,S.set.co,S.set.theme,s.kind==='cover'?[S.set.rep,S.set.date||today()]:0,(s.media||[]).map(n=>{const m=M(n);return m?[m.id,m.fit,m.focus]:n}),cache.ver].map(x=>typeof x==='string'?x:JSON.stringify(x)).join('¦');
     const c=(seen.get(sig)||0);seen.set(sig,c+1);sig+='#'+c;
     const res=cache.get(sig)||laySlide(s,ov,ctx);next.set(sig,res);
     res.forEach((r,p)=>{flat.push({...r,src:i,p,n:res.length,s});ctx={...ctx,p2:ctx.p1,p1:r.frame,t2:ctx.t1,t1:r.theme==='photo'?'photo':r.theme}});
@@ -946,6 +1046,8 @@ function paint(){
   if($('#thumbs')._h!==th){$('#thumbs').innerHTML=th;$('#thumbs')._h=th}
   document.querySelectorAll('.info input').forEach(i=>{const v=S.set[i.dataset.set]||'';if(document.activeElement!==i&&i.value!==v)i.value=v});$('#sDate').placeholder=today()+' (자동)';$('#sAg').checked=S.set.agenda;
   $('#bLogo').textContent=S.set.logo?'로고 빼기':'로고 넣기';
+  $('#thm').innerHTML=Object.entries(THEMES).map(([k,v])=>`<button data-th="${k}" aria-pressed="${(S.set.theme||'cobalt')===k}"><i style="background:linear-gradient(135deg,${v.sw[0]} 50%,${v.sw[1]} 50%)"></i>${v.name}</button>`).join('');
+  $('#sw').hidden=$('#swL').hidden=S.set.theme==='stage';
   $('#sw').innerHTML=COLORS.map(c=>`<button style="--c:${c}" data-c="${c}" aria-label="${c}" aria-pressed="${c===S.set.color}"></button>`).join('')+`<input type="color" value="${S.set.color}" aria-label="직접 고르기">`;
   size();
 }
@@ -953,9 +1055,9 @@ function size(){
   document.querySelectorAll('.frame').forEach(f=>f.style.setProperty('--s',f.clientWidth/1600));
 }
 let rT;const later=(ms=140)=>{clearTimeout(rT);rT=setTimeout(()=>{render();persist()},ms)};
-function snap(){undoS.push(JSON.stringify({text:S.text,ov:S.ov,fit:S.media.map(m=>[m.id,m.fit,m.focus])}));if(undoS.length>60)undoS.shift()}
+function snap(){undoS.push(JSON.stringify({text:S.text,ov:S.ov,fit:S.media.map(m=>[m.id,m.fit,m.focus]),theme:S.set.theme}));if(undoS.length>60)undoS.shift()}
 function change(fn){snap();S.sample=S.sample&&false||S.sample;fn();render();persist()}
-function undo(){const u=undoS.pop();if(!u)return;const o=JSON.parse(u);S.text=o.text;deck=parse(S.text);S.ov=o.ov;o.fit.forEach(([id,f,p])=>{const m=S.media.find(x=>x.id===id);if(m){m.fit=f;m.focus=p}});render();persist();toast('되돌렸어요')}
+function undo(){const u=undoS.pop();if(!u)return;const o=JSON.parse(u);S.text=o.text;deck=parse(S.text);S.ov=o.ov;if(o.theme)S.set.theme=o.theme;o.fit.forEach(([id,f,p])=>{const m=S.media.find(x=>x.id===id);if(m){m.fit=f;m.focus=p}});render();persist();toast('되돌렸어요')}
 const linesOf=()=>S.text.split('\n');
 function setOv(i,o){S.ov[i]={...(S.ov[i]||{}),...o};for(const k in S.ov[i])if(!S.ov[i][k])delete S.ov[i][k]}
 
@@ -1105,7 +1207,7 @@ function persist(){if(EMBED)return;clearTimeout(pT);pT=setTimeout(async()=>{
 async function restore(){
   const d=await kv('readonly',s=>s.get('draft'));if(!d)return false;
   for(const m of d.media){const b=await kv('readonly',s=>s.get('m:'+m.id));if(b){m.blob=b;m.url=URL.createObjectURL(b);stored.add(m.id)}}
-  Object.assign(S,d,{media:d.media.filter(m=>m.blob)});const old=d.set.rep===undefined;S.set={co:'콘텐츠팀',rep:'김기환',date:'',color:COLORS[0],agenda:true,logo:null,...d.set};if(old)S.set.co='콘텐츠팀';return!(S.sample&&old);
+  Object.assign(S,d,{media:d.media.filter(m=>m.blob)});const old=d.set.rep===undefined;S.set={co:'콘텐츠팀',rep:'김기환',date:'',color:COLORS[0],agenda:true,logo:null,theme:'cobalt',...d.set};if(old)S.set.co='콘텐츠팀';return!(S.sample&&old);
 }
 const fname=()=>(deck.title||'보고서').replace(/[\\/:*?"<>|]/g,' ').trim().slice(0,60);
 function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),20000)}
@@ -1149,6 +1251,7 @@ document.querySelectorAll('.info input').forEach(i=>i.oninput=()=>{S.set[i.datas
 $('#sAg').onchange=e=>{S.set.agenda=e.target.checked;render();persist()};
 $('#bLogo').onclick=()=>{if(S.set.logo){S.set.logo=null;render();persist()}else $('#flogo').click()};
 $('#flogo').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const u=await fileURL(f);await loadImg(u);S.set.logo=u;render();persist()}catch(_){toast('이 이미지는 열 수 없어요. PNG나 SVG로 넣어 주세요.')}};
+$('#thm').onclick=e=>{const k=e.target.closest('[data-th]')?.dataset.th;if(!k||k===S.set.theme)return;snap();S.set.theme=k;render();persist();toast(`‘${THEMES[k].name}’ 테마로 바꿨어요`)};
 $('#sw').onclick=e=>{const c=e.target.dataset.c;if(c){S.set.color=c;render();persist()}};
 $('#sw').oninput=e=>{if(e.target.type==='color'){S.set.color=e.target.value;document.documentElement.style.setProperty('--brand',e.target.value);persist()}};
 const setCols=n=>{$('#board').style.setProperty('--cols',n);document.querySelectorAll('[data-cols]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cols==n));try{localStorage.rdCols=n}catch(_){}size()};
