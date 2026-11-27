@@ -338,6 +338,7 @@ table.t .r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap
     <button id="bNew">새 보고서</button>
     <button id="bOpen">불러오기</button>
     <button id="bSave">파일로 저장</button>
+    <button id="bPpt" title="파워포인트 파일로 저장 (글자 수정 가능)">PPT</button>
     <button id="bPdf">PDF</button>
     <button id="bShow" class="go">발표하기</button>
   </header>
@@ -1039,7 +1040,7 @@ function paint(){
   $('#cnt').textContent=flat.length?`슬라이드 ${flat.length}장`:'';
   $('#notice').hidden=!S.sample;
   $('#bUndo').disabled=!undoS.length;
-  ['#bShow','#bPdf','#bSave'].forEach(q=>$(q).disabled=!flat.length);
+  ['#bShow','#bPdf','#bSave','#bPpt'].forEach(q=>$(q).disabled=!flat.length);
   if(document.activeElement!==$('#src')||$('#src').value!==S.text){const t=$('#src');if(t.value!==S.text){const st=t.scrollTop;t.value=S.text;t.scrollTop=st}}
   const used=new Set(deck.slides.flatMap(s=>s.media));
   const th=S.media.map(m=>`<div class="th ${used.has(m.name)?'':'off'}" draggable="true" data-m="${m.id}" title="${esc(m.name)}${used.has(m.name)?'':' (아직 슬라이드에 없음)'}"><img alt="${esc(m.name)}" src="${m.type==='video'?m.poster||'':m.url}" draggable="false">${m.type==='video'?'<b>영상</b>':''}<button aria-label="${esc(m.name)} 삭제">×</button></div>`).join('');
@@ -1222,6 +1223,183 @@ async function exportHTML(){
   const blob=new Blob([SRC.slice(0,a).replace(/<title>[^<]*<\/title>/,()=>`<title>${esc(deck.title)}</title>`),...parts,SRC.slice(b)],{type:'text/html'});
   return blob;
 }
+/* PPT로 저장: 화면에 그려진 슬라이드를 재서, 글은 고칠 수 있는 글상자로, 나머지는 같은 자리의 도형·사진·영상으로 옮긴다 */
+let PPTX=null;
+const loadPptx=()=>PPTX||(PPTX=new Promise((ok,no)=>{
+  // 압축 도구가 setTimeout으로 쪼개 돌면 다른 탭에 가 있을 때 거의 멈춘다. 멈추지 않는 방식으로 바꿔 둔다.
+  if(typeof window.setImmediate!=='function'){const ch=new MessageChannel(),q=[];ch.port1.onmessage=()=>{const f=q.shift();if(f)f()};window.setImmediate=(f,...a)=>{q.push(()=>f(...a));ch.port2.postMessage(0);return q.length};window.clearImmediate=()=>{}}
+  const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';s.onload=()=>ok(window.PptxGenJS);s.onerror=()=>{PPTX=null;s.remove();no(new Error('load'))};document.head.append(s)}));
+const IN=1/120,PT=.6; // 1600px = 13.333in = 960pt
+const pcx=Object.assign(document.createElement('canvas'),{width:1,height:1}).getContext('2d',{willReadFrequently:true}),colC=new Map();
+function rgba(c){
+  if(!c||c==='transparent'||c==='none')return null;if(colC.has(c))return colC.get(c);
+  pcx.clearRect(0,0,1,1);pcx.fillStyle='#000';pcx.fillStyle=c;pcx.fillRect(0,0,1,1);const d=pcx.getImageData(0,0,1,1).data;
+  const r=d[3]<3?null:{r:d[0],g:d[1],b:d[2],a:d[3]/255,hex:[d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase()};
+  colC.set(c,r);return r;
+}
+const mix=(c,b)=>{const f=k=>Math.round(c[k]*c.a+b[k]*(1-c.a));return[f('r'),f('g'),f('b')].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase()};
+const tr=(c,o)=>Math.round((1-c.a*o)*100);
+const pxv=(v,base)=>/%$/.test(v)?parseFloat(v)/100*base:parseFloat(v)||0;
+function cropImg(img,W,H,fit,pos){ // object-fit을 미리 잘라 둔다
+  const iw=img.naturalWidth,ih=img.naturalHeight;if(!iw||!ih||W<1||H<1)return null;
+  let sx=0,sy=0,sw=iw,sh=ih,dx=0,dy=0,dw=W,dh=H;
+  if(fit==='cover'){const k=Math.max(W/iw,H/ih);sw=Math.min(iw,W/k);sh=Math.min(ih,H/k);sx=(iw-sw)*pos[0];sy=(ih-sh)*pos[1]}
+  else if(fit==='contain'||fit==='scale-down'){const k=Math.min(W/iw,H/ih);dw=iw*k;dh=ih*k;dx=(W-dw)*pos[0];dy=(H-dh)*pos[1]}
+  const z=Math.min(sw/dw,2.2),c=document.createElement('canvas');c.width=Math.max(1,Math.round(dw*Math.max(z,1)));c.height=Math.max(1,Math.round(dh*Math.max(z,1)));
+  const g=c.getContext('2d');g.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
+  let alpha=false;try{const d=g.getImageData(0,0,c.width,c.height).data;for(let i=3;i<d.length;i+=4*97)if(d[i]<250){alpha=true;break}}catch(_){return null}
+  return{data:c.toDataURL(alpha?'image/png':'image/jpeg',.9),dx,dy,dw,dh};
+}
+function gradPng(bgi,W,H){ // linear-gradient만 그림으로 바꾼다
+  const m=bgi.match(/linear-gradient\((.*)\)/);if(!m||W<1||H<1)return null;
+  const parts=[];let d=0,cur='';for(const ch of m[1]){if(ch==='(')d++;if(ch===')')d--;if(ch===','&&!d){parts.push(cur.trim());cur=''}else cur+=ch}parts.push(cur.trim());
+  let ang=180;const dirs={'to top':0,'to right':90,'to bottom':180,'to left':270};
+  if(/deg$/.test(parts[0])){ang=parseFloat(parts.shift())}else if(dirs[parts[0]]!==undefined)ang=dirs[parts.shift()];
+  const rad=ang*Math.PI/180,len=Math.abs(W*Math.sin(rad))+Math.abs(H*Math.cos(rad)),ex=Math.sin(rad)*len/2,ey=-Math.cos(rad)*len/2;
+  const c=document.createElement('canvas'),k=Math.min(1,800/Math.max(W,H));c.width=Math.ceil(W*k);c.height=Math.ceil(H*k);
+  const g=c.getContext('2d');g.scale(k,k);const gr=g.createLinearGradient(W/2-ex,H/2-ey,W/2+ex,H/2+ey);
+  parts.forEach((p,i)=>{const mm=p.match(/^(.*?)\s+(-?[\d.]+)(%|px)?$/);let col=p,at=parts.length>1?i/(parts.length-1):0;if(mm){col=mm[1];at=mm[3]==='px'?(+mm[2])/len:(+mm[2])/100}try{gr.addColorStop(Math.max(0,Math.min(1,at)),col)}catch(_){}});
+  g.fillStyle=gr;g.fillRect(0,0,W,H);return c.toDataURL('image/png');
+}
+async function svgPng(svg,W,H){
+  const cl=svg.cloneNode(true),a=[svg,...svg.querySelectorAll('*')],b=[cl,...cl.querySelectorAll('*')];
+  a.forEach((e,i)=>{const cs=getComputedStyle(e);b[i].setAttribute('style',['fill','fill-opacity','stroke','stroke-width','stroke-opacity','stroke-linecap','stroke-linejoin','stroke-dasharray','stroke-dashoffset','opacity','transform','transform-origin','transform-box','font-size','font-weight','font-family','color','display'].map(p=>`${p}:${cs.getPropertyValue(p)}`).join(';'))});
+  cl.setAttribute('xmlns','http://www.w3.org/2000/svg');cl.setAttribute('width',W);cl.setAttribute('height',H);
+  const im=await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(cl)));
+  const c=document.createElement('canvas');c.width=Math.ceil(W*2);c.height=Math.ceil(H*2);c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/png');
+}
+async function slidePpt(pp,node,T){
+  const host=document.createElement('div');host.style.cssText='position:fixed;left:-30000px;top:0;width:1600px;height:900px;overflow:hidden;pointer-events:none';
+  const el=node.cloneNode(true);el.style.transform='none';el.classList.remove('enter');el.querySelectorAll('.ops,.pl,video').forEach(x=>x.remove());
+  host.append(el);document.body.append(host);
+  await Promise.all([...el.querySelectorAll('img')].map(i=>i.decode().catch(()=>{})));
+  const sl=pp.addSlide(),O=el.getBoundingClientRect(),scs=getComputedStyle(el),sbg=rgba(scs.backgroundColor)||{r:255,g:255,b:255,a:1,hex:'FFFFFF'};
+  sl.background={color:sbg.hex};
+  const box=r=>({x:(r.left-O.left)*IN,y:(r.top-O.top)*IN,w:r.width*IN,h:r.height*IN});
+  const out=r=>r.right<=O.left||r.left>=O.right||r.bottom<=O.top||r.top>=O.bottom;
+  const isBlk=n=>n.nodeType===1&&n.tagName!=='BR'&&getComputedStyle(n).display!=='inline';
+  const hasText=n=>/\S/.test(n.textContent);
+  function shape(r,cs,o){ // 배경·테두리
+    const bg=rgba(cs.backgroundColor),W=r.width,H=r.height;if(W<.5||H<.5)return;
+    const sides=['Top','Right','Bottom','Left'].map(s=>({w:cs[`border${s}Style`]==='none'?0:parseFloat(cs[`border${s}Width`])||0,c:rgba(cs[`border${s}Color`])}));
+    const uni=sides.every(s=>s.w===sides[0].w&&s.c&&sides[0].c&&s.c.hex===sides[0].c.hex)&&sides[0].w>0;
+    const rad=Math.min(pxv(cs.borderTopLeftRadius,Math.min(W,H)),Math.min(W,H)/2);
+    const ell=rad>=Math.min(W,H)/2-.5&&Math.abs(W-H)<1.5;
+    if(bg||uni){
+      const op={...box(r),fill:bg?{color:bg.hex,transparency:tr(bg,o)}:{type:'none'},line:uni?{color:sides[0].c.hex,width:sides[0].w*PT,transparency:tr(sides[0].c,o)}:{type:'none'}};
+      if(uni){const h=sides[0].w/2;Object.assign(op,box({left:r.left+h,top:r.top+h,width:W-h*2,height:H-h*2}))}
+      if(ell)sl.addShape('ellipse',op);else if(rad>.5)sl.addShape('roundRect',{...op,rectRadius:rad*IN});else sl.addShape('rect',op);
+    }
+    if(!uni)sides.forEach((s,i)=>{if(!s.w||!s.c)return;const q=i===0?{left:r.left,top:r.top,width:W,height:s.w}:i===1?{left:r.right-s.w,top:r.top,width:s.w,height:H}:i===2?{left:r.left,top:r.bottom-s.w,width:W,height:s.w}:{left:r.left,top:r.top,width:s.w,height:H};
+      sl.addShape('rect',{...box(q),fill:{color:s.c.hex,transparency:tr(s.c,o)},line:{type:'none'}})});
+    if(/linear-gradient/.test(cs.backgroundImage)){const d=gradPng(cs.backgroundImage,W,H);if(d)sl.addImage({data:d,...box(r)})}
+  }
+  function pseudo(e,r,cs0,which,o){ // 내용이 빈 ::before/::after 장식(점, 막대)
+    const cs=getComputedStyle(e,which);if(!cs.content||cs.content==='none'||cs.content==='normal'||cs.display==='none'||!/^["']{2}$/.test(cs.content))return;
+    const w=parseFloat(cs.width),h=parseFloat(cs.height);if(!(w>0&&h>0))return;
+    let x,y;
+    if(cs.position==='absolute'){const L=parseFloat(cs.left),Tp=parseFloat(cs.top),R=parseFloat(cs.right),B=parseFloat(cs.bottom);
+      const bl=parseFloat(cs0.borderLeftWidth)||0,bt=parseFloat(cs0.borderTopWidth)||0;
+      x=r.left+bl+(isNaN(L)?r.width-bl*2-(R||0)-w:L);y=r.top+bt+(isNaN(Tp)?r.height-bt*2-(B||0)-h:Tp)}
+    else{x=r.left+(parseFloat(cs0.paddingLeft)||0)+(parseFloat(cs.marginLeft)||0);y=r.top+(parseFloat(cs0.paddingTop)||0)+(parseFloat(cs.marginTop)||0)}
+    shape({left:x,top:y,width:w,height:h,right:x+w,bottom:y+h},cs,o*(+cs.opacity));
+  }
+  const pstr=(e,which,inl)=>{const p=getComputedStyle(e,which),c=p.content;if(inl!==undefined&&(p.display==='inline'&&p.position!=='absolute')!==inl)return'';const m=c&&c.match(/^"(.+)"$/);return m?m[1].replace(/\\"/g,'"'):''};
+  function ptext(e,r,cs0,which,o){ // 블록으로 놓인 글자 장식(», 번호 등)
+    const t=pstr(e,which,false);if(!t)return;const cs=getComputedStyle(e,which),c=rgba(cs.color);if(!c)return;
+    const fs=parseFloat(cs.fontSize),lh=cs.lineHeight==='normal'?fs*1.25:parseFloat(cs.lineHeight),w=parseFloat(cs.width)||fs*t.length,h=parseFloat(cs.height)||lh;
+    const cl=r.left+(parseFloat(cs0.borderLeftWidth)||0)+(parseFloat(cs0.paddingLeft)||0),ct=r.top+(parseFloat(cs0.borderTopWidth)||0)+(parseFloat(cs0.paddingTop)||0);
+    let x,y;
+    if(cs.position==='absolute'){const L=parseFloat(cs.left),Tp=parseFloat(cs.top);x=r.left+(isNaN(L)?0:L);y=r.top+(isNaN(Tp)?0:Tp)}
+    else if(which==='::before'){x=cl+(parseFloat(cs.marginLeft)||0);y=ct+(parseFloat(cs.marginTop)||0)}
+    else{x=r.right-(parseFloat(cs0.borderRightWidth)||0)-(parseFloat(cs0.paddingRight)||0)-w-(parseFloat(cs.marginRight)||0);y=ct+(parseFloat(cs.marginTop)||0)}
+    sl.addText([{text:t,options:{color:c.hex,transparency:tr(c,o*(+cs.opacity)),bold:+cs.fontWeight>=600,fontSize:fs*PT,fontFace:'Pretendard'}}],{...box({left:x,top:y,width:w+fs*.3,height:Math.max(h,lh)}),margin:[0,0,0,0],valign:'top',align:/center/.test(cs.textAlign)?'center':'left',lineSpacing:lh*PT,wrap:false,fit:'none'});
+  }
+  function text(cont,nodes,r,o,tight){
+    const ccs=getComputedStyle(cont),runs=[];
+    const fs=parseFloat(ccs.fontSize),lh=ccs.lineHeight==='normal'?fs*1.25:parseFloat(ccs.lineHeight),one=r.height<lh*1.6;
+    let lineB=null; // 화면에서 실제로 줄이 바뀐 자리를 그대로 옮긴다
+    const brk=()=>{if(runs.length)runs[runs.length-1].options.breakLine=true};
+    const push=(t,cs,op)=>{
+      if(!t)return;const c=rgba(cs.color)||{r:0,g:0,b:0,a:1,hex:'000000'};
+      if(cs.textTransform==='uppercase')t=t.toUpperCase();
+      const ls=parseFloat(cs.letterSpacing)||0;
+      runs.push({text:t,options:{color:c.hex,transparency:tr(c,op),bold:+cs.fontWeight>=600,italic:cs.fontStyle==='italic',fontSize:Math.max(1,parseFloat(cs.fontSize)*PT),fontFace:'Pretendard',charSpacing:ls?ls*PT:undefined}});
+    };
+    const walk=(n,op)=>{
+      if(n.nodeType===3){const pcs=getComputedStyle(n.parentElement),t=n.data;
+        if(/pre/.test(pcs.whiteSpace)&&one){t.split('\n').forEach((s,i)=>{if(i)brk();push(s,pcs,op)});return}
+        if(one){push(t.replace(/\s+/g,' '),pcs,op);return}
+        const rg=document.createRange();let piece='';
+        for(let i=0;i<t.length;i++){
+          if(t[i]==='\n'&&/pre/.test(pcs.whiteSpace)){push(piece,pcs,op);piece='';brk();lineB=null;continue}
+          if(!/\s/.test(t[i])){rg.setStart(n,i);rg.setEnd(n,i+1);const q=rg.getClientRects()[0];
+            if(q&&q.height){if(lineB!==null&&(q.top+q.bottom)/2>lineB){push(piece.replace(/\s+/g,' '),pcs,op);piece='';brk();lineB=q.bottom}else lineB=Math.max(lineB??-1e9,q.bottom)}}
+          piece+=t[i];
+        }
+        push(piece.replace(/\s+/g,' '),pcs,op);return}
+      if(n.nodeType!==1)return;const cs=getComputedStyle(n);if(cs.display==='none'||cs.visibility==='hidden')return;
+      if(n.tagName==='BR'){if(runs.length)brk();else push(' ',cs,op);lineB=null;return}
+      const b=rgba(cs.backgroundColor),o2=op*(+cs.opacity);
+      if(b)[...n.getClientRects()].forEach(q=>{if(q.width>.5)sl.addShape('rect',{...box(q),fill:{color:b.hex,transparency:tr(b,o2)},line:{type:'none'}})});
+      const gap=(p,s)=>{const f=parseFloat(p.fontSize)*.15;return(parseFloat(p['margin'+s])||0)+(parseFloat(p['padding'+s])||0)>f?' ':''};
+      const pb=getComputedStyle(n,'::before'),pa=getComputedStyle(n,'::after'),sb=pstr(n,'::before',true),sa=pstr(n,'::after',true);
+      push(gap(cs,'Left')+(sb?sb+gap(pb,'Right'):''),cs,o2);n.childNodes.forEach(c=>walk(c,o2));push((sa?gap(pa,'Left')+sa:'')+gap(cs,'Right'),cs,o2);
+    };
+    if(nodes===null){const sp=(w,s)=>{const p=getComputedStyle(cont,w);return(parseFloat(p['margin'+s])||0)>parseFloat(p.fontSize)*.15?' ':''},b=pstr(cont,'::before',true),a=pstr(cont,'::after',true);
+      push(b&&sp('::before','Left')+b+sp('::before','Right'),ccs,o);cont.childNodes.forEach(c=>walk(c,o));push(a&&sp('::after','Left')+a,ccs,o)}
+    else nodes.forEach(c=>walk(c,o));
+    // 공백 정리
+    for(let i=0;i<runs.length;i++){const p=runs[i-1];if(i===0||p.options.breakLine)runs[i].text=runs[i].text.replace(/^ +/,'');else if(/ $/.test(p.text))runs[i].text=runs[i].text.replace(/^ +/,'')}
+    for(let i=runs.length-1;i>=0;i--){if(i===runs.length-1||runs[i].options.breakLine)runs[i].text=runs[i].text.replace(/ +$/,'')}
+    const rr=runs.filter(x=>x.text||x.options.breakLine);if(!rr.some(x=>/\S/.test(x.text)))return;
+    const ta=ccs.textAlign;let al=/center/.test(ta)?'center':/right|end/.test(ta)?'right':ta==='justify'?'justify':'left';
+    if(tight&&one)al='center';
+    const sl2=Math.max(6,r.width*.04+fs*.3);let x=r.left,w=r.width+sl2;
+    if(al==='center')x-=sl2/2;else if(al==='right')x-=sl2;
+    sl.addText(rr,{...box({left:x,top:r.top,width:w,height:Math.max(r.height,lh)}),margin:[0,0,0,0],valign:'top',align:al,lineSpacing:lh*PT,paraSpaceBefore:0,paraSpaceAfter:0,wrap:!one,fit:'none',fontFace:'Pretendard'});
+  }
+  async function visit(e,op){
+    const cs=getComputedStyle(e);if(cs.display==='none'||cs.visibility==='hidden')return;
+    const o=op*(+cs.opacity);if(o<.02)return;
+    const r=e.getBoundingClientRect(),off=out(r);
+    if(e.tagName==='IMG'){if(off||!e.naturalWidth)return;const p=cs.objectPosition.split(' ').map(v=>/%$/.test(v)?parseFloat(v)/100:.5);
+      const c=cropImg(e,r.width,r.height,cs.objectFit,[p[0]??.5,p[1]??.5]);if(c)sl.addImage({data:c.data,...box({left:r.left+c.dx,top:r.top+c.dy,width:c.dw,height:c.dh}),transparency:o<1?Math.round((1-o)*100):undefined});return}
+    if(e.tagName==='svg'||e.tagName==='SVG'){if(off||r.width<1)return;try{sl.addImage({data:await svgPng(e,r.width,r.height),...box(r)})}catch(_){}return}
+    const mm=e.matches('figure.m[data-m]')&&S.media.find(m=>m.id===e.dataset.m);
+    if(mm&&mm.type==='video'){
+      shape(r,cs,o);const pi=e.querySelector('img.poster'),pcs=pi&&getComputedStyle(pi),p=pcs?pcs.objectPosition.split(' ').map(v=>/%$/.test(v)?parseFloat(v)/100:.5):[.5,.5];
+      const c=pi&&pi.naturalWidth?cropImg(pi,r.width,r.height,pcs.objectFit,p):null;
+      try{const data=await fileURL(mm.blob);sl.addMedia({type:'video',data,extn:(mm.blob.type.split('/')[1]||'mp4').replace('quicktime','mov'),...(c?{cover:c.data,...box({left:r.left+c.dx,top:r.top+c.dy,width:c.dw,height:c.dh})}:box(r))})}
+      catch(_){if(c)sl.addImage({data:c.data,...box(r)})}
+      return;
+    }
+    if(e!==el&&!off)shape(r,cs,o);
+    pseudo(e,r,cs,'::before',o);ptext(e,r,cs,'::before',o);
+    const kids=[...e.childNodes];
+    if(hasText(e)&&!kids.some(n=>n.nodeType===1&&(isBlk(n)||n.querySelector('*')&&[...n.querySelectorAll('*')].some(isBlk)))){
+      const disp=cs.display,flex=/flex|grid/.test(disp);
+      if(flex){const rg=document.createRange();rg.selectNodeContents(e);const q=rg.getBoundingClientRect();if(q.width)text(e,null,q,o,true)}
+      else{const bl=parseFloat(cs.borderLeftWidth)+parseFloat(cs.paddingLeft),bt=parseFloat(cs.borderTopWidth)+parseFloat(cs.paddingTop);
+        const W=r.width-bl-parseFloat(cs.borderRightWidth)-parseFloat(cs.paddingRight),H=r.height-bt-parseFloat(cs.borderBottomWidth)-parseFloat(cs.paddingBottom);
+        text(e,null,{left:r.left+bl,top:r.top+bt,width:W,height:H},o,false)}
+    }else{
+      let grp=[];
+      const flush=()=>{if(grp.length&&grp.some(hasText)){const rg=document.createRange();rg.setStartBefore(grp[0]);rg.setEndAfter(grp[grp.length-1]);const q=rg.getBoundingClientRect();if(q.width&&!out(q))text(e,grp,q,o,/flex|grid/.test(cs.display))}grp=[]};
+      for(const n of kids){if(n.nodeType===3||(n.nodeType===1&&!isBlk(n)&&![...n.querySelectorAll('*')].some(isBlk)))grp.push(n);else{flush();if(n.nodeType===1)await visit(n,o)}}
+      flush();
+    }
+    pseudo(e,r,cs,'::after',o);ptext(e,r,cs,'::after',o);
+  }
+  try{await visit(el,1)}finally{host.remove()}
+}
+async function exportPPT(){
+  let P;try{P=await loadPptx()}catch(_){toast('PPT 변환 도구를 불러오지 못했어요. 인터넷 연결을 확인해 주세요.',5000);return}
+  await document.fonts.ready;
+  const pp=new P();pp.defineLayout({name:'RD',width:13.333,height:7.5});pp.layout='RD';pp.title=deck.title||'보고서';pp.author=S.set.rep||'';pp.company=S.set.co||'';
+  for(const[i,f]of flat.entries()){toast(`PPT로 바꾸는 중… ${i+1} / ${flat.length}`,60000);await slidePpt(pp,f.node);await new Promise(r=>setTimeout(r))}
+  return pp.write({outputType:'blob'});
+}
 async function loadPack(o){
   const ms=[];for(const m of o.media){const b=await(await fetch(m.data)).blob();const{data,...r}=m;ms.push({...r,blob:b,url:URL.createObjectURL(b)})}
   Object.assign(S,{id:o.id,text:o.text,ov:o.ov||[],media:ms,sample:false});S.set={...S.set,...o.set};deck=null;undoS=[];stored=new Set();
@@ -1244,6 +1422,11 @@ $('#bOpen').onclick=()=>$('#fopen').click();
 $('#fopen').onchange=e=>{if(e.target.files.length)handleFiles(e.target.files);e.target.value=''};
 $('#bSave').onclick=async()=>{const b=await exportHTML();dl(b,fname()+'.html');toast(`저장했어요 (${(b.size/1048576).toFixed(1)}MB). 이 파일 하나로 발표와 수정이 됩니다`,5000)};
 $('#bPdf').onclick=()=>window.print();
+let pptBusy=false;
+$('#bPpt').onclick=async()=>{if(pptBusy)return;pptBusy=true;$('#bPpt').disabled=true;
+  try{const b=await exportPPT();if(b){dl(b,fname()+'.pptx');toast(`PPT로 저장했어요 (${(b.size/1048576).toFixed(1)}MB). 글자는 파워포인트에서 바로 고칠 수 있어요`,5000)}}
+  catch(e){console.error(e);toast('PPT로 바꾸지 못했어요. 다시 한 번 눌러 주세요.',5000)}
+  finally{pptBusy=false;$('#bPpt').disabled=!flat.length}};
 let addAt=null;
 $('#bFile').onclick=()=>{addAt=null;$('#file').click()};
 $('#file').onchange=e=>{if(e.target.files.length)handleFiles(e.target.files,addAt);addAt=null;e.target.value=''};
